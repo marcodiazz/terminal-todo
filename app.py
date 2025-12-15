@@ -7,6 +7,7 @@ from textual.message import Message
 
 class TaskRadioButton(RadioButton):
     """A RadioButton with delete functionality."""
+    BUTTON_INNER = "󰄴"
     
     class DeleteRequest(Message):
         """Message to request deletion of this task."""
@@ -33,6 +34,7 @@ class TodoApp(App):
                 # ("c", "clear", "Clear tabs"),
             ]
     CSS_PATH = "todo.tcss"
+
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -124,7 +126,7 @@ class TodoApp(App):
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
-        input_box = Input(placeholder="Enter a new todo item...", id="task_input")
+        input_box = Input(placeholder=" Enter a new todo item...", id="task_input")
         not_completed_tasks = VerticalScroll(id="not_completed_tasks")
         completed_tasks = VerticalScroll(id="completed_tasks")
         tabs = Tabs("Today")
