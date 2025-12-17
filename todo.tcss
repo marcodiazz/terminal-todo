@@ -1,17 +1,35 @@
 RadioButton {
     width: 100%;
+    margin: 0;
+    padding: 0 2;
     # border: round $surface;
 }
+
 # RadioButton:focus {
 #     border: round $accent;
 # }
 VerticalScroll{
     # border: round $surface
-    padding: 1 1;
+    padding: 0 1;
+}
+
+#not_completed_label{
+    margin: 1 0 1 0;
+}
+
+#not_completed_tasks{
+    height: 50%;
+    margin: 0 0 1 0;
+}
+
+#completed_label{
+    margin: 1 0 1 0;
 }
 
 #completed_tasks {
     text-style: strike;
+    margin: 0 0 1 0;
+
 }
 
 /* Modal styles */
@@ -28,7 +46,7 @@ VerticalScroll{
     height: auto;
     background: $panel;
     border: dashed $primary;
-    padding: 1 2;
+    padding: 0 2;
 }
 
 #tab_modal_title {
@@ -36,9 +54,13 @@ VerticalScroll{
     text-align: center;
     text-style: bold;
     color: $accent;
-    margin-bottom: 1;
+    margin-bottom: 0;
 }
 
 #tab_input {
     width: 100%;
+}
+
+#task_input{
+    # border: solid $accent;
 }
