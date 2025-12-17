@@ -3,8 +3,8 @@ from pathlib import Path
 
 from textual import on
 from textual.app import App, ComposeResult
-from textual.widgets import Footer, Header, Input, ListView, ListItem, Static, Label, Checkbox, Collapsible, RadioButton, Tabs, Tab
-from textual.containers import VerticalScroll, Container, Center, Middle
+from textual.widgets import DataTable, Footer, Header, Input, ListView, ListItem, RadioSet, Static, Label, Checkbox, Collapsible, RadioButton, Tabs, Tab
+from textual.containers import VerticalScroll, Container, Center, Middle, Vertical
 from textual.message import Message
 from textual.events import Key
 
@@ -39,7 +39,7 @@ class TodoApp(App):
                 ("a", "add_task", "+ task"),
                 ("r", "remove", "remove tab"),
                 ("escape", "close_modal", "esc"),
-                # ("c", "clear", "Clear tabs"),
+                ("c", "toggle_compact", "Compact"),
                 # Global navigation
                 ("left", "prev_tab", ""),
                 ("right", "next_tab", ""),
@@ -60,6 +60,8 @@ class TodoApp(App):
         self.current_tab_id = None
         # Saved tabs data loaded from disk: [{"name": str, "tasks": {"not_completed": [...], "completed": [...] }}, ...]
         self.saved_tabs = []
+        # Compact mode for not completed tasks
+        self.compact = False
         # Load saved data
         self._load_data()
     
@@ -300,7 +302,7 @@ class TodoApp(App):
         try:
             if self.current_tab_id is not None and self.current_tab_id in self.tasks_by_tab:
                 if task_widget.value:  # If the task is marked as completed
-                    self.query_one("#completed_tasks").mount(TaskRadioButton(label=task_text, value=True))
+                    self.query_one("#completed_tasks").mount(TaskRadioButton(label=task_text, value=True, compact=True))
                     task_widget.remove()
                     # Move task from not_completed to completed
                     task_str = str(task_text)
@@ -308,7 +310,7 @@ class TodoApp(App):
                         self.tasks_by_tab[self.current_tab_id]["not_completed"].remove(task_str)
                         self.tasks_by_tab[self.current_tab_id]["completed"].append(task_str)
                 else:  # If the task is marked as not completed
-                    self.query_one("#not_completed_tasks").mount(TaskRadioButton(label=task_text, value=False))
+                    self.query_one("#not_completed_tasks").mount(TaskRadioButton(label=task_text, value=False, compact=self.compact))
                     task_widget.remove()
                     # Move task from completed to not_completed
                     task_str = str(task_text)
@@ -354,17 +356,17 @@ class TodoApp(App):
         
         # Load not completed tasks
         for task_text in self.tasks_by_tab[tab_id]["not_completed"]:
-            task_widget = TaskRadioButton(task_text, value=False)
+            task_widget = TaskRadioButton(task_text, value=False, compact=self.compact)
             not_completed_container.mount(task_widget)
         
         # Load completed tasks
         for task_text in self.tasks_by_tab[tab_id]["completed"]:
-            task_widget = TaskRadioButton(task_text, value=True)
+            task_widget = TaskRadioButton(task_text, value=True, compact=True)
             completed_container.mount(task_widget)
     
     def task_widget(self, task: str) -> TaskRadioButton:
         """Create a task widget for a todo task."""
-        return TaskRadioButton(task)
+        return TaskRadioButton(task, value=False, compact=self.compact)
     
     @on(TaskRadioButton.DeleteRequest)
     def on_task_delete_request(self, event: TaskRadioButton.DeleteRequest) -> None:
@@ -412,6 +414,13 @@ class TodoApp(App):
         self.theme = (
             "dracula" if self.theme == "catppuccin-latte" else "catppuccin-latte"
         )
+    
+    def action_toggle_compact(self) -> None:
+        """Toggle compact mode for not completed tasks."""
+        self.compact = not self.compact
+        # Reload tasks to apply the new compact setting
+        if self.current_tab_id is not None:
+            self._load_tasks_for_tab(self.current_tab_id)
     
     def action_prev_tab(self) -> None:
         """Navigate to the previous tab."""
