@@ -8,7 +8,6 @@ from textual.containers import VerticalScroll, Container, Center, Middle, Vertic
 from textual.message import Message
 from textual.events import Key
 
-# Path for persistent data storage
 DATA_DIR = Path.home() / ".terminal-todo"
 DATA_FILE = DATA_DIR / "data.json"
 
@@ -35,35 +34,33 @@ class TodoApp(App):
 
     BINDINGS = [
                 ("d", "toggle_dark", "Theme"),
-                ("t", "add", "+ tab"),
-                ("a", "add_task", "+ task"),
-                ("r", "remove", "remove tab"),
-                ("escape", "close_modal", "esc"),
+                ("t", "add", "New tab"),
+                ("a", "add_task", "New task"),
+                ("r", "remove", "Remove tab"),
+                ("escape", "close_modal", ""),
                 ("c", "toggle_compact", "Compact"),
-                # Global navigation
                 ("left", "prev_tab", ""),
                 ("right", "next_tab", ""),
-                ("h", "prev_tab", "<-"),
-                ("l", "next_tab", "->"),
+                ("h", "prev_tab", ""),
+                ("l", "next_tab", ""),
                 ("up", "prev_task", ""),
                 ("down", "next_task", ""),
-                ("j", "next_task", "↓"),
-                ("k", "prev_task", "↑"),
+                ("j", "next_task", ""),
+                ("k", "prev_task", ""),
             ]
-    CSS_PATH = "todo.tcss"
-
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Dictionary to store tasks for each tab: {tab_id: {"not_completed": [...], "completed": [...]}}
         self.tasks_by_tab = {}
         self.current_tab_id = None
-        # Saved tabs data loaded from disk: [{"name": str, "tasks": {"not_completed": [...], "completed": [...] }}, ...]
         self.saved_tabs = []
-        # Compact mode for not completed tasks
         self.compact = False
-        # Load saved data
         self._load_data()
+    
+    @property
+    def CSS_PATH(self):
+        """Return the path to the CSS file."""
+        return Path(__file__).parent / "todo.tcss"
     
     def _get_data_path(self) -> Path:
         """Get the path to the data file, creating directory if needed."""
@@ -78,10 +75,8 @@ class TodoApp(App):
             try:
                 with open(data_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                    # New format: {"tabs": [{"name": str, "tasks": {...}}, ...]}
                     if "tabs" in data:
                         self.saved_tabs = data.get("tabs", [])
-                    # Backwards compatibility with old format using tab_ids
                     elif "tasks_by_tab" in data and "tab_names" in data:
                         tasks_by_tab = data.get("tasks_by_tab", {})
                         tab_names = data.get("tab_names", {})
@@ -107,7 +102,6 @@ class TodoApp(App):
 
     def _save_data_after_refresh(self) -> None:
         """Save tasks and tabs to persistent storage once the UI has settled."""
-        # First save current UI state
         self._save_current_tasks()
 
         data_path = self._get_data_path()
@@ -143,14 +137,12 @@ class TodoApp(App):
         
         tabs = self.query_one(Tabs)
         
-        # If we have saved tabs, recreate them with new internal IDs
         if self.saved_tabs:
             first_tab_id = None
             for saved in self.saved_tabs:
                 name = saved.get("name", "Tab")
                 tasks = saved.get("tasks", {})
                 await tabs.add_tab(name)
-                # Use the last tab as the one we just added
                 new_tab = list(tabs.query(Tab))[-1]
                 tab_id = new_tab.id
                 if first_tab_id is None:
@@ -165,7 +157,6 @@ class TodoApp(App):
                 self.current_tab_id = first_tab_id
                 self._load_tasks_for_tab(first_tab_id)
         else:
-            # No saved data, create a default "Today" tab
             if tabs.tab_count == 0:
                 await tabs.add_tab("Today")
             if tabs.active_tab:
@@ -175,21 +166,17 @@ class TodoApp(App):
         
     def on_tabs_tab_activated(self, event: Tabs.TabActivated) -> None:
         """Handle TabActivated message sent by Tabs."""
-        # Save tasks from the current tab before switching
         if self.current_tab_id is not None:
             self._save_current_tasks()
         
         if event.tab is None:
-            # When the tabs are cleared, event.tab will be None
             self.current_tab_id = None
         else:
             self.current_tab_id = event.tab.id
             
-            # Initialize tasks for this tab if it doesn't exist
             if self.current_tab_id not in self.tasks_by_tab:
                 self.tasks_by_tab[self.current_tab_id] = {"not_completed": [], "completed": []}
             
-            # Load tasks for the new active tab
             self._load_tasks_for_tab(self.current_tab_id)
 
     def action_add(self) -> None:
@@ -207,7 +194,6 @@ class TodoApp(App):
             event.input.value = ""
             self.query_one("#tab_modal").visible = False
             tabs.focus()
-            # Initialize empty task list for the new tab (it becomes the active tab)
             if tabs.active_tab:
                 tab_id = tabs.active_tab.id
                 if tab_id not in self.tasks_by_tab:
@@ -225,11 +211,9 @@ class TodoApp(App):
         active_tab = tabs.active_tab
         if active_tab is not None:
             tab_id = active_tab.id
-            # Remove tasks associated with this tab
             if tab_id in self.tasks_by_tab:
                 del self.tasks_by_tab[tab_id]
             tabs.remove_tab(tab_id)
-            # Update current_tab_id to the new active tab
             if tabs.active_tab:
                 self.current_tab_id = tabs.active_tab.id
             else:
@@ -246,41 +230,37 @@ class TodoApp(App):
         task_input = self.query_one("#task_input", Input)
         
         if tab_modal.visible:
-            # Close tab modal
             tab_modal.visible = False
             self.query_one("#tab_input", Input).value = ""
             self.query_one(Tabs).focus()
         elif self.focused == task_input:
-            # If task input is focused, move focus to first uncompleted task
             not_completed = list(self.query_one("#not_completed_tasks").query(TaskRadioButton))
             if not_completed:
                 not_completed[0].focus()
                 not_completed[0].scroll_visible()
             else:
-                # If no tasks, focus tabs
                 self.query_one(Tabs).focus()
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
         input_box = Input(placeholder=" Enter a new todo item...", id="task_input")
         not_completed_tasks = VerticalScroll(id="not_completed_tasks")
+        not_completed_tasks.border_title = "󰄱 To-Do"
         completed_tasks = VerticalScroll(id="completed_tasks")
+        completed_tasks.border_title = " Completed"
         tabs = Tabs()
 
         yield tabs
-        yield Label("󰄱 To-Do", id="not_completed_label")
         yield not_completed_tasks
-        yield Label(" Completed", id="completed_label")
         yield completed_tasks
         yield input_box
-        # yield Footer()
+        yield Footer()
         
-        # Modal for adding new tab
         with Container(id="tab_modal"):
             with Center():
                 with Middle():
                     with Container(id="tab_modal_content"):
-                        yield Label(" Create New Tab", id="tab_modal_title")
+                        yield Label(" Create New Tab", id="tab_modal_title")
                         yield Input(placeholder="Enter tab name...", id="tab_input")
         
     @on(Input.Submitted, "#task_input")
@@ -290,7 +270,6 @@ class TodoApp(App):
             task = self.task_widget(todo_text)
             self.query_one("#not_completed_tasks").mount(task)
             self.query_one("#task_input", Input).value = ""
-            # Add task to the current tab's task list
             if self.current_tab_id in self.tasks_by_tab:
                 self.tasks_by_tab[self.current_tab_id]["not_completed"].append(str(todo_text))
             self._save_data()
@@ -301,18 +280,16 @@ class TodoApp(App):
         task_text = task_widget.label
         try:
             if self.current_tab_id is not None and self.current_tab_id in self.tasks_by_tab:
-                if task_widget.value:  # If the task is marked as completed
+                if task_widget.value:
                     self.query_one("#completed_tasks").mount(TaskRadioButton(label=task_text, value=True, compact=True))
                     task_widget.remove()
-                    # Move task from not_completed to completed
                     task_str = str(task_text)
                     if task_str in self.tasks_by_tab[self.current_tab_id]["not_completed"]:
                         self.tasks_by_tab[self.current_tab_id]["not_completed"].remove(task_str)
                         self.tasks_by_tab[self.current_tab_id]["completed"].append(task_str)
-                else:  # If the task is marked as not completed
+                else:
                     self.query_one("#not_completed_tasks").mount(TaskRadioButton(label=task_text, value=False, compact=self.compact))
                     task_widget.remove()
-                    # Move task from completed to not_completed
                     task_str = str(task_text)
                     if task_str in self.tasks_by_tab[self.current_tab_id]["completed"]:
                         self.tasks_by_tab[self.current_tab_id]["completed"].remove(task_str)
@@ -329,16 +306,13 @@ class TodoApp(App):
         if self.current_tab_id is None or self.current_tab_id not in self.tasks_by_tab:
             return
         
-        # Clear the current stored tasks
         self.tasks_by_tab[self.current_tab_id]["not_completed"] = []
         self.tasks_by_tab[self.current_tab_id]["completed"] = []
         
-        # Save not completed tasks
         not_completed_container = self.query_one("#not_completed_tasks")
         for task_widget in not_completed_container.query(TaskRadioButton):
             self.tasks_by_tab[self.current_tab_id]["not_completed"].append(str(task_widget.label))
         
-        # Save completed tasks
         completed_container = self.query_one("#completed_tasks")
         for task_widget in completed_container.query(TaskRadioButton):
             self.tasks_by_tab[self.current_tab_id]["completed"].append(str(task_widget.label))
@@ -348,18 +322,15 @@ class TodoApp(App):
         if tab_id not in self.tasks_by_tab:
             return
         
-        # Clear current UI
         not_completed_container = self.query_one("#not_completed_tasks")
         completed_container = self.query_one("#completed_tasks")
         not_completed_container.remove_children()
         completed_container.remove_children()
         
-        # Load not completed tasks
         for task_text in self.tasks_by_tab[tab_id]["not_completed"]:
             task_widget = TaskRadioButton(task_text, value=False, compact=self.compact)
             not_completed_container.mount(task_widget)
         
-        # Load completed tasks
         for task_text in self.tasks_by_tab[tab_id]["completed"]:
             task_widget = TaskRadioButton(task_text, value=True, compact=True)
             completed_container.mount(task_widget)
@@ -374,10 +345,8 @@ class TodoApp(App):
         task_widget = event.task_widget
         task_text = task_widget.label
         
-        # Remove from UI
         task_widget.remove()
         
-        # Remove from tasks dictionary
         if self.current_tab_id and self.current_tab_id in self.tasks_by_tab:
             task_str = str(task_text)
             if task_str in self.tasks_by_tab[self.current_tab_id]["not_completed"]:
@@ -388,25 +357,23 @@ class TodoApp(App):
 
     def on_key(self, event: Key) -> None:
         """Handle key events globally to prevent scroll from capturing navigation keys."""
-        # Check if we're in the modal input
         focused = self.focused
         if isinstance(focused, Input):
-            return  # Let inputs handle their own keys
+            return
         
-        # Intercept navigation keys before they reach scroll containers
         if event.key in ("up", "down", "k", "j"):
             event.prevent_default()
             event.stop()
             if event.key in ("up", "k"):
                 self.action_prev_task()
-            else:  # down or j
+            else:
                 self.action_next_task()
         elif event.key in ("left", "right", "h", "l"):
             event.prevent_default()
             event.stop()
             if event.key in ("left", "h"):
                 self.action_prev_tab()
-            else:  # right or l
+            else:
                 self.action_next_tab()
     
     def action_toggle_dark(self) -> None:
@@ -418,7 +385,6 @@ class TodoApp(App):
     def action_toggle_compact(self) -> None:
         """Toggle compact mode for not completed tasks."""
         self.compact = not self.compact
-        # Reload tasks to apply the new compact setting
         if self.current_tab_id is not None:
             self._load_tasks_for_tab(self.current_tab_id)
     
@@ -426,7 +392,6 @@ class TodoApp(App):
         """Navigate to the previous tab."""
         tabs = self.query_one(Tabs)
         if tabs.tab_count > 0 and tabs.active_tab:
-            # Get list of all tab IDs
             tab_ids = [tab.id for tab in tabs.query("Tab")]
             current_index = tab_ids.index(tabs.active_tab.id)
             new_index = (current_index - 1) % len(tab_ids)
@@ -436,7 +401,6 @@ class TodoApp(App):
         """Navigate to the next tab."""
         tabs = self.query_one(Tabs)
         if tabs.tab_count > 0 and tabs.active_tab:
-            # Get list of all tab IDs
             tab_ids = [tab.id for tab in tabs.query("Tab")]
             current_index = tab_ids.index(tabs.active_tab.id)
             new_index = (current_index + 1) % len(tab_ids)
@@ -444,7 +408,6 @@ class TodoApp(App):
     
     def action_prev_task(self) -> None:
         """Navigate to the previous task."""
-        # Get all visible tasks (not completed + completed)
         not_completed = list(self.query_one("#not_completed_tasks").query(TaskRadioButton))
         completed = list(self.query_one("#completed_tasks").query(TaskRadioButton))
         all_tasks = not_completed + completed
@@ -452,7 +415,6 @@ class TodoApp(App):
         if not all_tasks:
             return
         
-        # Find currently focused task
         focused = self.focused
         if isinstance(focused, TaskRadioButton) and focused in all_tasks:
             current_index = all_tasks.index(focused)
@@ -460,13 +422,11 @@ class TodoApp(App):
             all_tasks[prev_index].focus()
             all_tasks[prev_index].scroll_visible()
         else:
-            # If no task is focused, focus the last one
             all_tasks[-1].focus()
             all_tasks[-1].scroll_visible()
     
     def action_next_task(self) -> None:
         """Navigate to the next task."""
-        # Get all visible tasks (not completed + completed)
         not_completed = list(self.query_one("#not_completed_tasks").query(TaskRadioButton))
         completed = list(self.query_one("#completed_tasks").query(TaskRadioButton))
         all_tasks = not_completed + completed
@@ -474,7 +434,6 @@ class TodoApp(App):
         if not all_tasks:
             return
         
-        # Find currently focused task
         focused = self.focused
         if isinstance(focused, TaskRadioButton) and focused in all_tasks:
             current_index = all_tasks.index(focused)
@@ -482,12 +441,15 @@ class TodoApp(App):
             all_tasks[next_index].focus()
             all_tasks[next_index].scroll_visible()
         else:
-            # If no task is focused, focus the first one
             all_tasks[0].focus()
             all_tasks[0].scroll_visible()
 
 
-
-if __name__ == "__main__":
+def main():
+    """Entry point for the terminal-todo command."""
     app = TodoApp()
     app.run()
+
+
+if __name__ == "__main__":
+    main()

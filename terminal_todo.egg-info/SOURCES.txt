@@ -1,0 +1,13 @@
+MANIFEST.in
+README.md
+requirements.txt
+setup.py
+terminal_todo/__init__.py
+terminal_todo/app.py
+terminal_todo/todo.tcss
+terminal_todo.egg-info/PKG-INFO
+terminal_todo.egg-info/SOURCES.txt
+terminal_todo.egg-info/dependency_links.txt
+terminal_todo.egg-info/entry_points.txt
+terminal_todo.egg-info/requires.txt
+terminal_todo.egg-info/top_level.txt

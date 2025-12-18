@@ -1,0 +1,78 @@
+Metadata-Version: 2.4
+Name: terminal-todo
+Version: 1.0.0
+Summary: A beautiful terminal-based todo app built with Textual
+Home-page: https://github.com/marcodiazz/terminal-todo
+Author: Marco Diaz
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: textual>=6.9.0
+Dynamic: author
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+# Terminal Todo
+
+A beautiful, keyboard-driven terminal-based todo application built with [Textual](https://textual.textualize.io/).
+
+## Features
+
+- 📋 Multiple tabs for organizing tasks
+- ✅ Mark tasks as complete/incomplete
+- 🎨 Dark/Light theme toggle
+- ⌨️ Vim-style keyboard navigation
+- 💾 Persistent storage
+- 🎯 Compact mode for cleaner view
+
+## Installation
+
+### From source (local)
+
+```bash
+git clone https://github.com/marcodiazz/terminal-todo.git
+cd terminal-todo
+pip install -e .
+```
+
+### From GitHub (direct install)
+
+```bash
+pip install git+https://github.com/marcodiazz/terminal-todo.git
+```
+
+## Usage
+
+Simply run:
+
+```bash
+todo
+```
+
+## Keyboard Shortcuts
+
+- `a` - Add new task
+- `t` - Create new tab
+- `r` - Remove current tab
+- `q` - Delete selected task
+- `d` - Toggle dark/light theme
+- `c` - Toggle compact mode
+- `h/l` or `←/→` - Navigate between tabs
+- `j/k` or `↑/↓` - Navigate between tasks
+- `Space` - Toggle task completion
+- `Esc` - Close modal or unfocus input
+
+## Data Storage
+
+Tasks are automatically saved to `~/.terminal-todo/data.json`
+
+## License
+
+MIT
