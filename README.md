@@ -66,6 +66,26 @@ cd terminal-todo
 pip install -e .
 ```
 
+## Updating
+
+To update to the latest version:
+
+### Windows
+```powershell
+pipx upgrade terminal-todo
+```
+
+### macOS/Linux
+```bash
+pipx upgrade terminal-todo
+```
+
+Or to force reinstall from GitHub:
+```bash
+pipx uninstall terminal-todo
+pipx install git+https://github.com/marcodiazz/terminal-todo.git
+```
+
 ## Usage
 
 Simply run:
