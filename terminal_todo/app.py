@@ -38,7 +38,7 @@ class TodoApp(App):
                 ("a", "add_task", "New task"),
                 ("r", "remove", "Remove tab"),
                 ("escape", "close_modal", ""),
-                ("c", "toggle_compact", "Compact"),
+                # ("c", "toggle_compact", "Compact"),
                 ("left", "prev_tab", ""),
                 ("right", "next_tab", ""),
                 ("h", "prev_tab", ""),
@@ -54,7 +54,7 @@ class TodoApp(App):
         self.tasks_by_tab = {}
         self.current_tab_id = None
         self.saved_tabs = []
-        self.compact = False
+        self.compact = True
         self._load_data()
     
     @property

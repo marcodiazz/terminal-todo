@@ -12,13 +12,34 @@ A beautiful, keyboard-driven terminal-based todo application built with [Textual
 - 🎨 Dark/Light theme toggle
 - ⌨️ Vim-style keyboard navigation
 - 💾 Persistent storage
-- 🎯 Compact mode for cleaner view
 
 ## Installation
 
-### Recommended: Using pipx (macOS/Linux)
+The installation is **permanent** - once installed, the `todo` command will be available even after restarting your computer.
 
-`pipx` is the recommended way to install CLI applications in isolated environments.
+### Windows
+
+```powershell
+# 1. Install Python (if not already installed)
+# Download from: https://www.python.org/downloads/
+# ⚠️ IMPORTANT: Check "Add Python to PATH" during installation
+
+# 2. Install pipx
+python -m pip install --user pipx
+python -m pipx ensurepath
+
+# 3. Restart your terminal (PowerShell or CMD)
+
+# 4. Install terminal-todo
+pipx install git+https://github.com/marcodiazz/terminal-todo.git
+
+# 5. Use the command
+todo
+```
+
+**Note for Windows users:** After step 3, close and reopen your terminal for the PATH changes to take effect.
+
+### macOS/Linux
 
 ```bash
 # 1. Install Homebrew (if not already installed)
@@ -28,8 +49,13 @@ A beautiful, keyboard-driven terminal-based todo application built with [Textual
 brew install pipx
 pipx ensurepath
 
-# 3. Install terminal-todo
+# 3. Restart your terminal
+
+# 4. Install terminal-todo
 pipx install git+https://github.com/marcodiazz/terminal-todo.git
+
+# 5. Use the command
+todo
 ```
 
 ### Alternative: From source (for development)
@@ -38,14 +64,6 @@ pipx install git+https://github.com/marcodiazz/terminal-todo.git
 git clone https://github.com/marcodiazz/terminal-todo.git
 cd terminal-todo
 pip install -e .
-```
-
-### Alternative: Using pip with virtual environment
-
-```bash
-python3 -m venv ~/venvs/terminal-todo
-source ~/venvs/terminal-todo/bin/activate
-pip install git+https://github.com/marcodiazz/terminal-todo.git
 ```
 
 ## Usage

@@ -5,6 +5,7 @@ Screen {
 RadioButton {
     width: 100%;
     margin: 0;
+    background: $surface;
     # padding: 0 2;
     # border: round $surface;
 }
@@ -70,4 +71,5 @@ RadioButton {
 #task_input{
     # border: solid $accent;
     margin: 1 0 1 0;
+    background: $surface; 
 }
