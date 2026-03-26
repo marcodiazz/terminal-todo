@@ -5,9 +5,6 @@ Screen {
 RadioButton {
     width: 100%;
     margin: 0;
-    background: $surface;
-    # padding: 0 2;
-    # border: round $surface;
 }
 
 # RadioButton:focus {
@@ -56,6 +53,10 @@ RadioButton {
     padding: 2 2;
 }
 
+#tab_input {
+    width: 100%;
+}
+
 #tab_modal_title {
     width: 100%;
     text-align: center;
@@ -64,12 +65,7 @@ RadioButton {
     margin-bottom: 0;
 }
 
-#tab_input {
-    width: 100%;
-}
-
 #task_input{
     # border: solid $accent;
     margin: 1 0 1 0;
-    background: $surface; 
 }

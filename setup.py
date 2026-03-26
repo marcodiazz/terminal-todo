@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="terminal-todo",
-    version="1.0.0",
+    version="1.0.5",
     author="Marco Diaz",
     description="A beautiful terminal-based todo app built with Textual",
     long_description=long_description,
